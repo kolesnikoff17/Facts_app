@@ -1,0 +1,21 @@
+version: '3'
+services:
+  pgdb:
+    image: "postgres:14"
+    container_name: "pgdb"
+    entrypoint:
+      - POSTGRES_USER=facts_app
+      - POSTGRES_PASSWORD=pwd123
+    ports:
+      - "54320:5432"
+    volumes:
+      - db/data:/var/lib/postgresql/data
+      - db:/docker-entrypoint-initdb.d
+  app:
+    image: facts_app
+    build: .
+    container_name: facts_backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - pgdb
