@@ -13,8 +13,8 @@ services:
       - db:/docker-entrypoint-initdb.d
   app:
     image: facts_app
-    build: .
     container_name: facts_backend
+    build: .
     ports:
       - "8080:8080"
     depends_on:
