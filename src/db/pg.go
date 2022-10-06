@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"httpServer/src/common"
 	"log"
@@ -45,12 +46,12 @@ func InitDb(ctx context.Context) *pgxpool.Pool {
 func (ins Instance) GetFactById(ctx context.Context, id int) (common.Fact, error) {
 	var fact common.Fact
 	row := ins.Db.QueryRow(ctx,
-		`SELECT f.title, f.description, STRING_AGG(l.link, ',') FROM Facts AS f 
+		`SELECT f.id, f.title, f.description, STRING_AGG(l.link, ',') FROM Facts AS f
 INNER JOIN Links AS l ON f.id = l.fact_id
 WHERE f.id = $1
 GROUP BY f.id;`, id)
 	var linkList string
-	err := row.Scan(&fact.Desc, &fact.Title, linkList)
+	err := row.Scan(&fact.Id, &fact.Title, &fact.Desc, &linkList)
 	if err != nil {
 		return common.Fact{}, err
 	}
@@ -59,7 +60,7 @@ GROUP BY f.id;`, id)
 }
 
 func (ins Instance) UpdFact(ctx context.Context, fact common.Fact, id int) error {
-	tx, err := ins.Db.Begin(ctx)
+	tx, err := ins.Db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err
 	}
@@ -73,7 +74,7 @@ func (ins Instance) UpdFact(ctx context.Context, fact common.Fact, id int) error
 		return err
 	}
 	_, err = ins.Db.Exec(ctx,
-		`DELETE * FROM Links WHERE fact_id = $1;`, id)
+		`DELETE FROM Links WHERE fact_id = $1;`, id)
 	if err != nil {
 		return err
 	}
@@ -91,15 +92,15 @@ func (ins Instance) UpdFact(ctx context.Context, fact common.Fact, id int) error
 	return nil
 }
 
-func (ins Instance) InsertFacts(ctx context.Context, facts []common.Fact) ([]int, error) {
-	tx, err := ins.Db.Begin(ctx)
+func (ins Instance) InsertFacts(ctx context.Context, facts common.FactsArr) ([]int, error) {
+	tx, err := ins.Db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback(ctx)
-	res := make([]int, 0, len(facts))
+	res := make([]int, 0, len(facts.Facts))
 	id := 0
-	for _, v := range facts {
+	for _, v := range facts.Facts {
 		err = ins.Db.QueryRow(ctx,
 			`INSERT INTO Facts(title, description) VALUES ($1, $2) RETURNING id;`,
 			v.Title,
