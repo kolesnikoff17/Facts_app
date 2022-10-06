@@ -1,14 +1,13 @@
 CREATE TABLE IF NOT EXISTS Facts (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    desc TEXT NOT NULL
-)
+    description TEXT NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS Links (
     id SERIAL PRIMARY KEY,
     fact_id INT NOT NULL,
     link VARCHAR(255) NOT NULL,
-    FOREIGN KEY (fact_id)
-        REFERENCES Facts (id)
-)
+    FOREIGN KEY (fact_id) REFERENCES Facts (id)
+);
 

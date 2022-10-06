@@ -6,20 +6,17 @@ import (
 	"httpServer/src/handlers"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		exit := make(chan os.Signal, 1)
-		defer close(exit)
-		signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
-		<-exit
-		cancel()
-	}()
+	ctx := context.Background()
+	// go func() {
+	//	exit := make(chan os.Signal, 1)
+	//	defer close(exit)
+	//	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
+	//	<-exit
+	//	cancel()
+	// }()
 
 	db.Ins = db.Instance{Db: db.InitDb(ctx)}
 
