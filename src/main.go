@@ -4,12 +4,14 @@ import (
 	"context"
 	"httpServer/src/db"
 	"httpServer/src/handlers"
+	"httpServer/src/mw"
 	"log"
 	"net/http"
 )
 
 func main() {
 	ctx := context.Background()
+	mux := http.NewServeMux()
 	// go func() {
 	//	exit := make(chan os.Signal, 1)
 	//	defer close(exit)
@@ -20,6 +22,9 @@ func main() {
 
 	db.Ins = db.Instance{Db: db.InitDb(ctx)}
 
-	http.HandleFunc("/fact/", handlers.Router)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	handler := mw.Logging(mux)
+	handler = mw.PanicRecovery(handler)
+
+	mux.HandleFunc("/fact/", handlers.Router)
+	log.Fatal(http.ListenAndServe(":8080", handler))
 }
