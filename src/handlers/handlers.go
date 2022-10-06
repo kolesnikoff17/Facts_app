@@ -34,7 +34,6 @@ func Router(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		if r.URL.Path == "/fact/" {
 			rand.Seed(time.Now().UnixNano())
-			// todo add max id from bd
 			maxId, err := db.Ins.GetMaxId(r.Context())
 			if err != nil {
 				log.Printf("getMaxId err: %s", err)

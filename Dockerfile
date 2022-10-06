@@ -1,14 +1,14 @@
 FROM golang:1.18 AS builder
 WORKDIR /build
 
-COPY /src /build
+COPY . .
 
-RUN go build . -o main
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main ./src/main.go
 
 FROM alpine AS server
 
-COPY --from=builder /build/main /opt/app/
+WORKDIR /app
 
-WORKDIR /opt/app
+COPY --from=builder /build/main .
 
 CMD ["./main"]

@@ -2,9 +2,11 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"httpServer/src/common"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -14,10 +16,19 @@ type Instance struct {
 
 var Ins Instance
 
-const connStr = "postgres://facts_app:pwd123@localhost:54320/facts_app?sslmode=disable&connect_timeout=5"
+// const connStr = "postgres://facts_app:pwd123@localhost:5432/facts_app?sslmode=disable&connect_timeout=5"
+
+func getConnStr() string {
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable connect_timeout=5",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PWD"),
+		os.Getenv("DB_NAME"))
+}
 
 func InitDb(ctx context.Context) *pgxpool.Pool {
-	poolConfig, _ := pgxpool.ParseConfig(connStr)
+	poolConfig, _ := pgxpool.ParseConfig(getConnStr())
 	poolConfig.MaxConns = 10
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
@@ -34,7 +45,7 @@ func InitDb(ctx context.Context) *pgxpool.Pool {
 func (ins Instance) GetFactById(ctx context.Context, id int) (common.Fact, error) {
 	var fact common.Fact
 	row := ins.Db.QueryRow(ctx,
-		`SELECT f.title, f.desc, STRING_AGG(l.link, ',') FROM Facts AS f 
+		`SELECT f.title, f.description, STRING_AGG(l.link, ',') FROM Facts AS f 
 INNER JOIN Links AS l ON f.id = l.fact_id
 WHERE f.id = $1
 GROUP BY f.id;`, id)
@@ -54,7 +65,7 @@ func (ins Instance) UpdFact(ctx context.Context, fact common.Fact, id int) error
 	}
 	defer tx.Rollback(ctx)
 	_, err = ins.Db.Exec(ctx,
-		`UPDATE Facts SET title = $1, desc = $2 WHERE id = $3;`,
+		`UPDATE Facts SET title = $1, description = $2 WHERE id = $3;`,
 		fact.Title,
 		fact.Desc,
 		id)
@@ -90,7 +101,7 @@ func (ins Instance) InsertFacts(ctx context.Context, facts []common.Fact) ([]int
 	id := 0
 	for _, v := range facts {
 		err = ins.Db.QueryRow(ctx,
-			`INSERT INTO Facts(title, desc) VALUES ($1, $2) RETURNING id;`,
+			`INSERT INTO Facts(title, description) VALUES ($1, $2) RETURNING id;`,
 			v.Title,
 			v.Desc).Scan(&id)
 		if err != nil {

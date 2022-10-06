@@ -3,19 +3,31 @@ services:
   pgdb:
     image: "postgres:14"
     container_name: "pgdb"
-    entrypoint:
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=facts_db
       - POSTGRES_USER=facts_app
       - POSTGRES_PASSWORD=pwd123
+      - PGDATA=/var/lib/postgresql/data/pgdata
     ports:
       - "54320:5432"
     volumes:
-      - db/data:/var/lib/postgresql/data
-      - db:/docker-entrypoint-initdb.d
+      - ./db/data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
   app:
     image: facts_app
     container_name: facts_backend
     build: .
+    restart: unless-stopped
     ports:
       - "8080:8080"
     depends_on:
+      - pgdb
+    environment:
+      - DB_HOST=pgdb
+      - DB_USER=facts_app
+      - DB_PORT=5432
+      - DB_PWD=pwd123
+      - DB_NAME=facts_db
+    links:
       - pgdb
