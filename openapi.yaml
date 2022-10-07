@@ -1,0 +1,112 @@
+openapi: 3.0.3
+info:
+  title: Facts_app
+  description: "Small web API to store some random facts in bd"
+  version: 1.0.0
+paths:
+  /fact:
+    get:
+      description: "Get a random fact"
+      responses:
+        "200":
+          description: "Fact was obtained from db and returned in response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fact"
+        "400":
+          description: "The database is empty"
+    post:
+      description: "Insert a set of facts in db and return set of it's ids"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/factArr"
+      responses:
+        "200":
+          description: "Insertion successful"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+        "400":
+          description: "Wrong fact format"
+  /fact/{id}:
+    get:
+      description: "Get fact by id"
+      responses:
+        "200":
+          description: "Fact was obtained from db and returned in response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fact"
+        "400":
+          description: "No such id in db or wrong id format"
+    put:
+      description: "Update existing file"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/fact"
+      responses:
+        "200":
+          description: "Update successful"
+        "400":
+          description: "Wrong id format or no such id in db or wrong fact format or id in URL/id in request body mismatch"
+components:
+  schemas:
+    fact:
+      type: object
+      required:
+        - id
+        - title
+        - description
+      properties:
+        id:
+          type: integer
+          nullable: false
+          description: "Primary key for db"
+        title:
+          type: string
+          nullable: false
+          description: "Name of fact"
+        description:
+          type: string
+          nullable: false
+          description: "Fact itself"
+        links:
+          description: "Array of links on additional resources"
+          type: array
+          items:
+            type: string
+    factArr:
+      properties:
+        facts:
+          description: "Array of facts"
+          nullable: false
+          type: array
+          items:
+            type: object
+            required:
+              - title
+              - description
+            properties:
+              title:
+                type: string
+                nullable: false
+                description: "Name of fact"
+              description:
+                  type: string
+                  nullable: false
+                  description: "Fact itself"
+              links:
+                description: "Array of links on additional resources"
+                type: array
+                items:
+                  type: string
+  
