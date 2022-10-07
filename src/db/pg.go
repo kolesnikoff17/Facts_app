@@ -17,8 +17,6 @@ type Instance struct {
 
 var Ins Instance
 
-// const connStr = "postgres://facts_app:pwd123@localhost:5432/facts_app?sslmode=disable&connect_timeout=5"
-
 func getConnStr() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable connect_timeout=5",
 		os.Getenv("DB_HOST"),
