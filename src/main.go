@@ -25,7 +25,7 @@ func main() {
 	handler := mw.Logging(mux)
 	handler = mw.PanicRecovery(handler)
 
-	mux.HandleFunc("/fact/", handlers.RouterTree)
-	mux.HandleFunc("/fact", handlers.Router)
+	mux.Handle("/fact/", handlers.ServeErr(handlers.RouterTree))
+	mux.Handle("/fact", handlers.ServeErr(handlers.Router))
 	log.Fatal(http.ListenAndServe(":8080", handler))
 }

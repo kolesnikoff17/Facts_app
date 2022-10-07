@@ -29,18 +29,18 @@ type appErr struct {
 	msg    string
 }
 
-func RouterTree(w http.ResponseWriter, r *http.Request) {
+func RouterTree(w http.ResponseWriter, r *http.Request) *appErr {
 	switch r.Method {
 	case "GET":
-		getFact(w, r)
+		return getFact(w, r)
 	case "PUT":
-		putFact(w, r)
+		return putFact(w, r)
 	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		return &appErr{status: http.StatusMethodNotAllowed, err: nil, msg: "Allowed: GET, PUT"}
 	}
 }
 
-func Router(w http.ResponseWriter, r *http.Request) {
+func Router(w http.ResponseWriter, r *http.Request) *appErr {
 	switch r.Method {
 	case "GET":
 		rand.Seed(time.Now().UnixNano())
@@ -49,13 +49,12 @@ func Router(w http.ResponseWriter, r *http.Request) {
 			log.Printf("getMaxId err: %s", err)
 		}
 		r.URL.Path += "/" + strconv.Itoa(rand.Intn(maxId-1)+1)
-		getFact(w, r)
+		return getFact(w, r)
 	case "POST":
-		postFact(w, r)
+		return postFact(w, r)
 	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		return &appErr{status: http.StatusMethodNotAllowed, err: nil, msg: "Allowed: GET, POST"}
 	}
-
 }
 
 func getFact(w http.ResponseWriter, r *http.Request) *appErr {
