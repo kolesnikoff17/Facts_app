@@ -2,10 +2,7 @@ module httpServer
 
 go 1.18
 
-require (
-	github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/jackc/pgx/v5 v5.0.1
-)
+require github.com/jackc/pgx/v5 v5.0.1
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
