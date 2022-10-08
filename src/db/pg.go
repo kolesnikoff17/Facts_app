@@ -43,6 +43,7 @@ func InitDb(ctx context.Context) *pgxpool.Pool {
 
 func (ins Instance) GetFactById(ctx context.Context, id int) (common.Fact, error) {
 	var fact common.Fact
+
 	row := ins.Db.QueryRow(ctx,
 		`SELECT f.id, f.title, f.description, STRING_AGG(l.link, ',') FROM Facts AS f
 INNER JOIN Links AS l ON f.id = l.fact_id
