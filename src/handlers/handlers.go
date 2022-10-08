@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"httpServer/src/common"
@@ -48,7 +49,7 @@ func Router(w http.ResponseWriter, r *http.Request) *appErr {
 		if err != nil {
 			log.Printf("getMaxId err: %s", err)
 		}
-		r.URL.Path += "/" + strconv.Itoa(rand.Intn(maxId-1)+1)
+		r.URL.Path += "/" + strconv.Itoa(rand.Intn(maxId)+1)
 		return getFact(w, r)
 	case "POST":
 		return postFact(w, r)
@@ -59,11 +60,12 @@ func Router(w http.ResponseWriter, r *http.Request) *appErr {
 
 func getFact(w http.ResponseWriter, r *http.Request) *appErr {
 	id, err := parseId(r.URL.Path)
+	fmt.Println(id)
 	if err != nil {
 		return &appErr{status: http.StatusBadRequest, err: err, msg: "Wrong id format"}
 	}
 	fact, err := db.Ins.GetFactById(r.Context(), id)
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return &appErr{status: http.StatusBadRequest, err: err, msg: "No such id"}
 	} else if err != nil {
 		return &appErr{status: http.StatusInternalServerError, err: err, msg: ""}
@@ -119,8 +121,12 @@ func parseId(s string) (int, error) {
 	id := 0
 	var c rune
 	n, err := fmt.Sscanf(s, "/fact/%d%c", &id, &c)
-	if n == 1 && err == io.EOF && id > 0 {
-		return id, nil
+	if n > 1 && err != io.EOF {
+		return 0, fmt.Errorf("wrong URL format: %w", err)
 	}
-	return 0, err
+	if id < 1 {
+		return 0, errors.New("id less then one")
+	}
+
+	return id, nil
 }
