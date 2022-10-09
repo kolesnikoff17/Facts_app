@@ -29,9 +29,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: integer
+                type: object
+                required:
+                  - ids
+                properties:
+                  ids:
+                    type: array
+                    items:
+                      type: integer
         "400":
           description: "Wrong fact format"
   /fact/{id}:
@@ -56,6 +61,10 @@ paths:
       responses:
         "200":
           description: "Update successful"
+          content:
+            application/json:
+              schema:
+                type: object
         "400":
           description: "Wrong id format or no such id in db or wrong fact format or id in URL/id in request body mismatch"
 components:

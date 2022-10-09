@@ -71,13 +71,16 @@ func (ins Instance) UpdFact(ctx context.Context, fact common.Fact, id int) error
 		return err
 	}
 	defer tx.Rollback(ctx)
-	_, err = ins.Db.Exec(ctx,
+	ct, err := ins.Db.Exec(ctx,
 		`UPDATE Facts SET title = $1, description = $2 WHERE id = $3;`,
 		fact.Title,
 		fact.Desc,
 		id)
 	if err != nil {
 		return err
+	}
+	if ct.RowsAffected() == 0 {
+		return pgx.ErrNoRows
 	}
 	_, err = ins.Db.Exec(ctx,
 		`DELETE FROM Links WHERE fact_id = $1;`, id)
@@ -88,6 +91,7 @@ func (ins Instance) UpdFact(ctx context.Context, fact common.Fact, id int) error
 		_, err = ins.Db.Exec(ctx,
 			`INSERT INTO Links(fact_id, link) VALUES ($1, $2)`, id, v)
 		if err != nil {
+			fmt.Printf("%T", err)
 			return err
 		}
 	}
