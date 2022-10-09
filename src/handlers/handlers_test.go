@@ -14,7 +14,7 @@ import (
 )
 
 func isEqual(a, b common.Fact) bool {
-	if a.Id != b.Id || a.Title != b.Title || a.Desc != b.Desc || len(a.Links) != len(b.Links) {
+	if a.ID != b.ID || a.Title != b.Title || a.Desc != b.Desc || len(a.Links) != len(b.Links) {
 		return false
 	}
 	for i := 0; i < len(a.Links) && i < len(b.Links); i++ {
@@ -41,7 +41,7 @@ func TestRouterTreeGetId(t *testing.T) {
 	if err != nil {
 		t.Fatalf("router (tree) get method valid test: expected err nil, got %v", err)
 	}
-	factEx := common.Fact{Id: 1, Title: "aboba", Desc: "aboba_aboba", Links: []string{"aboba", "aboba_aboba"}}
+	factEx := common.Fact{ID: 1, Title: "aboba", Desc: "aboba_aboba", Links: []string{"aboba", "aboba_aboba"}}
 	if !isEqual(fact, factEx) {
 		t.Errorf("router (tree) get method valid test: expected %v, got %v", factEx, fact)
 	}
@@ -156,7 +156,7 @@ func TestRouterPostInvalid(t *testing.T) {
 
 func TestRouterTreePut(t *testing.T) {
 	var b bytes.Buffer
-	facts := common.Fact{Id: 1, Title: "a", Desc: "a"}
+	facts := common.Fact{ID: 1, Title: "a", Desc: "a"}
 	err := json.NewEncoder(&b).Encode(facts)
 	if err != nil {
 		t.Fatalf("router (tree) put method test: expected err nil, got %v", err)
@@ -173,7 +173,7 @@ func TestRouterTreePut(t *testing.T) {
 
 func TestRouterTreePutMismatch(t *testing.T) {
 	var b bytes.Buffer
-	facts := common.Fact{Id: 2, Title: "a", Desc: "a"}
+	facts := common.Fact{ID: 2, Title: "a", Desc: "a"}
 	err := json.NewEncoder(&b).Encode(facts)
 	if err != nil {
 		t.Fatalf("router (tree) put method test: expected err nil, got %v", err)
@@ -187,7 +187,7 @@ func TestRouterTreePutMismatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("router (tree) put method test: expected err nil, got %v", err)
 	}
-	if expected := "Id mismatch\n"; expected != string(data) {
+	if expected := "ID mismatch\n"; expected != string(data) {
 		t.Errorf("router (tree) put method test: expected %v, got %v", expected, string(data))
 	}
 	if res.StatusCode != http.StatusBadRequest {

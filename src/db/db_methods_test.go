@@ -10,7 +10,7 @@ import (
 )
 
 func isEqual(a, b common.Fact) bool {
-	if a.Id != b.Id || a.Title != b.Title || a.Desc != b.Desc || len(a.Links) != len(b.Links) {
+	if a.ID != b.ID || a.Title != b.Title || a.Desc != b.Desc || len(a.Links) != len(b.Links) {
 		return false
 	}
 	for i := 0; i < len(a.Links) && i < len(b.Links); i++ {
@@ -28,15 +28,15 @@ func TestInitDb(t *testing.T) {
 
 func TestInstance_GetFactById(t *testing.T) {
 	ctx := context.Background()
-	factEx := common.Fact{Id: 1, Title: "aboba", Desc: "aboba_aboba", Links: []string{"aboba", "aboba_aboba"}}
-	fact, err := Ins.GetFactById(ctx, 1)
+	factEx := common.Fact{ID: 1, Title: "aboba", Desc: "aboba_aboba", Links: []string{"aboba", "aboba_aboba"}}
+	fact, err := Ins.GetFactByID(ctx, 1)
 	if err != nil {
 		t.Fatalf("get fact by id test: expected err nil, got %v", err)
 	}
 	if !isEqual(factEx, fact) {
 		t.Errorf("get fact by id test: expected fact %v, got %v", factEx, fact)
 	}
-	_, err = Ins.GetFactById(ctx, -1)
+	_, err = Ins.GetFactByID(ctx, -1)
 	if !errors.Is(err, pgx.ErrNoRows) {
 		t.Fatalf("get fact by id test: expected err %v, got %v", pgx.ErrNoRows, err)
 	}
@@ -45,7 +45,7 @@ func TestInstance_GetFactById(t *testing.T) {
 func TestInstance_GetMaxId(t *testing.T) {
 	ctx := context.Background()
 	expected := 3
-	got, err := Ins.GetMaxId(ctx)
+	got, err := Ins.GetMaxID(ctx)
 	if err != nil {
 		t.Fatalf("get max id test: expected err nil, got %v", err)
 	}
@@ -81,7 +81,7 @@ func TestInstance_InsertFacts2(t *testing.T) {
 
 func TestInstance_UpdFact(t *testing.T) {
 	ctx := context.Background()
-	fact := common.Fact{Id: 2, Title: "hhh", Desc: "hhh", Links: []string{"hhh"}}
+	fact := common.Fact{ID: 2, Title: "hhh", Desc: "hhh", Links: []string{"hhh"}}
 	err := Ins.UpdFact(ctx, fact, 2)
 	if err != nil {
 		t.Fatalf("update fact test: expected err nil, got %v", err)
@@ -90,8 +90,8 @@ func TestInstance_UpdFact(t *testing.T) {
 
 func TestInstance_GetFactById2(t *testing.T) {
 	ctx := context.Background()
-	factEx := common.Fact{Id: 2, Title: "hhh", Desc: "hhh", Links: []string{"hhh"}}
-	fact, err := Ins.GetFactById(ctx, 2)
+	factEx := common.Fact{ID: 2, Title: "hhh", Desc: "hhh", Links: []string{"hhh"}}
+	fact, err := Ins.GetFactByID(ctx, 2)
 	if err != nil {
 		t.Fatalf("get fact by id after update test: expected err nil, got %v", err)
 	}

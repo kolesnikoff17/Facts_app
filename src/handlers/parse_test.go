@@ -30,7 +30,7 @@ func TestParsingId(t *testing.T) {
 	}
 
 	for _, v := range testCases {
-		if returned, _ := parseId(v.val); returned != v.expect {
+		if returned, _ := parseID(v.val); returned != v.expect {
 			t.Fatalf("test: %v, value: %v, expected %v got %v",
 				v.name, v.val, v.expect, returned)
 		}

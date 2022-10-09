@@ -15,8 +15,10 @@ import (
 	"time"
 )
 
-type ServeErr func(w http.ResponseWriter, r *http.Request) *appErr
+// ServeErr is a wrapper type for error handling
+type ServeErr func(w http.ResponseWriter, r *http.Request) *AppErr
 
+// ServeHTTP made to implement http.Handler
 func (fn ServeErr) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if e := fn(w, r); e != nil {
 		log.Println(e.err)
@@ -24,100 +26,103 @@ func (fn ServeErr) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type appErr struct {
+// AppErr is a custom error
+type AppErr struct {
 	status int
 	err    error
 	msg    string
 }
 
-func RouterTree(w http.ResponseWriter, r *http.Request) *appErr {
+// RouterTree is a method router for /fact/ request
+func RouterTree(w http.ResponseWriter, r *http.Request) *AppErr {
 	switch r.Method {
 	case "GET":
 		return getFact(w, r)
 	case "PUT":
 		return putFact(w, r)
 	default:
-		return &appErr{status: http.StatusMethodNotAllowed, err: nil, msg: "Allowed: GET, PUT"}
+		return &AppErr{status: http.StatusMethodNotAllowed, err: nil, msg: "Allowed: GET, PUT"}
 	}
 }
 
-func Router(w http.ResponseWriter, r *http.Request) *appErr {
+// Router is a method router for /fact request
+func Router(w http.ResponseWriter, r *http.Request) *AppErr {
 	switch r.Method {
 	case "GET":
-		rand.Seed(time.Now().UnixNano())
-		maxId, err := db.Ins.GetMaxId(r.Context())
+		rand.Seed(time.Now().Unix())
+		maxID, err := db.Ins.GetMaxID(r.Context())
 		if err != nil {
 			log.Printf("getMaxId err: %s", err)
 		}
-		r.URL.Path += "/" + strconv.Itoa(rand.Intn(maxId)+1)
+		r.URL.Path += "/" + strconv.Itoa(rand.Intn(maxID)+1)
 		return getFact(w, r)
 	case "POST":
 		return postFact(w, r)
 	default:
-		return &appErr{status: http.StatusMethodNotAllowed, err: nil, msg: "Allowed: GET, POST"}
+		return &AppErr{status: http.StatusMethodNotAllowed, err: nil, msg: "Allowed: GET, POST"}
 	}
 }
 
-func getFact(w http.ResponseWriter, r *http.Request) *appErr {
-	id, err := parseId(r.URL.Path)
+func getFact(w http.ResponseWriter, r *http.Request) *AppErr {
+	id, err := parseID(r.URL.Path)
 	fmt.Println(id)
 	if err != nil {
-		return &appErr{status: http.StatusBadRequest, err: err, msg: "Wrong id format"}
+		return &AppErr{status: http.StatusBadRequest, err: err, msg: "Wrong id format"}
 	}
-	fact, err := db.Ins.GetFactById(r.Context(), id)
+	fact, err := db.Ins.GetFactByID(r.Context(), id)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return &appErr{status: http.StatusBadRequest, err: err, msg: "No such id"}
+		return &AppErr{status: http.StatusBadRequest, err: err, msg: "No such id"}
 	} else if err != nil {
-		return &appErr{status: http.StatusInternalServerError, err: err, msg: ""}
+		return &AppErr{status: http.StatusInternalServerError, err: err, msg: ""}
 	}
 	err = json.NewEncoder(w).Encode(fact)
 	if err != nil {
-		return &appErr{status: http.StatusInternalServerError, err: err, msg: ""}
+		return &AppErr{status: http.StatusInternalServerError, err: err, msg: ""}
 	}
 	return nil
 }
 
-func postFact(w http.ResponseWriter, r *http.Request) *appErr {
+func postFact(w http.ResponseWriter, r *http.Request) *AppErr {
 	facts := common.FactsArr{Facts: make([]common.Fact, 1)}
 	err := json.NewDecoder(r.Body).Decode(&facts)
 	if err != nil {
-		return &appErr{status: http.StatusBadRequest, err: err, msg: "Wrong fact format"}
+		return &AppErr{status: http.StatusBadRequest, err: err, msg: "Wrong fact format"}
 	}
 	idList, err := db.Ins.InsertFacts(r.Context(), facts)
 	if err != nil {
-		return &appErr{status: http.StatusInternalServerError, err: err, msg: ""}
+		return &AppErr{status: http.StatusInternalServerError, err: err, msg: ""}
 	}
 	err = json.NewEncoder(w).Encode(struct {
 		Ids []int `json:"id"`
 	}{Ids: idList})
 	if err != nil {
-		return &appErr{status: http.StatusInternalServerError, err: err, msg: ""}
+		return &AppErr{status: http.StatusInternalServerError, err: err, msg: ""}
 	}
 	return nil
 }
 
-func putFact(w http.ResponseWriter, r *http.Request) *appErr {
-	id, err := parseId(r.URL.Path)
+func putFact(w http.ResponseWriter, r *http.Request) *AppErr {
+	id, err := parseID(r.URL.Path)
 	if err != nil {
-		return &appErr{status: http.StatusBadRequest, err: err, msg: "Wrong id format"}
+		return &AppErr{status: http.StatusBadRequest, err: err, msg: "Wrong id format"}
 	}
 	var fact common.Fact
 	err = json.NewDecoder(r.Body).Decode(&fact)
 	if err != nil {
-		return &appErr{status: http.StatusBadRequest, err: err, msg: "Wrong fact format"}
+		return &AppErr{status: http.StatusBadRequest, err: err, msg: "Wrong fact format"}
 	}
-	if fact.Id != id {
-		return &appErr{status: http.StatusBadRequest, err: err, msg: "Id mismatch"}
+	if fact.ID != id {
+		return &AppErr{status: http.StatusBadRequest, err: err, msg: "ID mismatch"}
 	}
 	err = db.Ins.UpdFact(r.Context(), fact, id)
 	if err != nil {
-		return &appErr{status: http.StatusInternalServerError, err: err, msg: ""}
+		return &AppErr{status: http.StatusInternalServerError, err: err, msg: ""}
 	}
 	w.WriteHeader(http.StatusOK)
 	return nil
 }
 
-func parseId(s string) (int, error) {
+func parseID(s string) (int, error) {
 	id := 0
 	var c rune
 	n, err := fmt.Sscanf(s, "/fact/%d%c", &id, &c)

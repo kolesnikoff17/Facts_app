@@ -11,10 +11,12 @@ import (
 	"strings"
 )
 
+// Instance type keeps a pool of connections to db, and have methods to work with it.
 type Instance struct {
 	Db *pgxpool.Pool
 }
 
+// Ins helps as get our db logic across all codebase.
 var Ins Instance
 
 func getConnStr() string {
@@ -26,6 +28,8 @@ func getConnStr() string {
 		os.Getenv("DB_NAME"))
 }
 
+// InitDb is an initialization func for Ins variable.
+// Creates a pool of connection to db and ping it.
 func InitDb(ctx context.Context) *pgxpool.Pool {
 	poolConfig, _ := pgxpool.ParseConfig(getConnStr())
 	poolConfig.MaxConns = 10
@@ -41,16 +45,16 @@ func InitDb(ctx context.Context) *pgxpool.Pool {
 	return pool
 }
 
-func (ins Instance) GetFactById(ctx context.Context, id int) (common.Fact, error) {
+// GetFactByID returns a common.Fact from db with given id. If there is no such id, returns pgx.ErrNoRows
+func (ins Instance) GetFactByID(ctx context.Context, id int) (common.Fact, error) {
 	var fact common.Fact
-
 	row := ins.Db.QueryRow(ctx,
 		`SELECT f.id, f.title, f.description, STRING_AGG(l.link, ',') FROM Facts AS f
 INNER JOIN Links AS l ON f.id = l.fact_id
 WHERE f.id = $1
 GROUP BY f.id;`, id)
 	var linkList string
-	err := row.Scan(&fact.Id, &fact.Title, &fact.Desc, &linkList)
+	err := row.Scan(&fact.ID, &fact.Title, &fact.Desc, &linkList)
 	if err != nil {
 		return common.Fact{}, err
 	}
@@ -58,6 +62,7 @@ GROUP BY f.id;`, id)
 	return fact, nil
 }
 
+// UpdFact updates facts with given id.
 func (ins Instance) UpdFact(ctx context.Context, fact common.Fact, id int) error {
 	tx, err := ins.Db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
@@ -91,6 +96,7 @@ func (ins Instance) UpdFact(ctx context.Context, fact common.Fact, id int) error
 	return nil
 }
 
+// InsertFacts inserts common.FactsArr into db and returns slice of ids
 func (ins Instance) InsertFacts(ctx context.Context, facts common.FactsArr) ([]int, error) {
 	tx, err := ins.Db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
@@ -123,7 +129,8 @@ func (ins Instance) InsertFacts(ctx context.Context, facts common.FactsArr) ([]i
 	return res, nil
 }
 
-func (ins Instance) GetMaxId(ctx context.Context) (int, error) {
+// GetMaxID returns current max id in db
+func (ins Instance) GetMaxID(ctx context.Context) (int, error) {
 	id := 0
 	err := ins.Db.QueryRow(ctx, `SELECT MAX(id) FROM Facts;`).Scan(&id)
 	if err != nil {
