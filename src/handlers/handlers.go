@@ -65,13 +65,12 @@ func Router(w http.ResponseWriter, r *http.Request) *AppErr {
 
 func getFact(w http.ResponseWriter, r *http.Request) *AppErr {
 	id, err := parseID(r.URL.Path)
-	fmt.Println(id)
 	if err != nil {
 		return &AppErr{status: http.StatusBadRequest, err: err, msg: "Wrong id format"}
 	}
 	fact, err := db.Ins.GetFactByID(r.Context(), id)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return &AppErr{status: http.StatusBadRequest, err: err, msg: "No such id"}
+		return &AppErr{status: http.StatusBadRequest, err: fmt.Errorf("with id %d: %w", id, err), msg: "No such id"}
 	} else if err != nil {
 		return &AppErr{status: http.StatusInternalServerError, err: err, msg: ""}
 	}
