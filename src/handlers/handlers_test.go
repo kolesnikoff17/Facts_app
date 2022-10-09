@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"httpServer/src/common"
 	"httpServer/src/db"
 	"io/ioutil"
@@ -124,7 +123,6 @@ func TestRouterPost(t *testing.T) {
 	if err != nil {
 		t.Fatalf("router post method test: expected err nil, got %v", err)
 	}
-	fmt.Println(expected, got)
 	if !reflect.DeepEqual(expected, got) {
 		t.Errorf("router post method test: expected %v, got %v", expected, got)
 	}
