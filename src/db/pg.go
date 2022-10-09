@@ -49,8 +49,8 @@ func InitDb(ctx context.Context) *pgxpool.Pool {
 func (ins Instance) GetFactByID(ctx context.Context, id int) (common.Fact, error) {
 	var fact common.Fact
 	row := ins.Db.QueryRow(ctx,
-		`SELECT f.id, f.title, f.description, STRING_AGG(l.link, ',') FROM Facts AS f
-INNER JOIN Links AS l ON f.id = l.fact_id
+		`SELECT f.id, f.title, f.description, COALESCE(STRING_AGG(l.link, ','), '') FROM Facts AS f
+LEFT JOIN Links AS l ON f.id = l.fact_id
 WHERE f.id = $1
 GROUP BY f.id;`, id)
 	var linkList string
@@ -58,7 +58,9 @@ GROUP BY f.id;`, id)
 	if err != nil {
 		return common.Fact{}, err
 	}
-	fact.Links = strings.Split(linkList, ",")
+	if linkList != "" {
+		fact.Links = strings.Split(linkList, ",")
+	}
 	return fact, nil
 }
 

@@ -4,7 +4,7 @@ CONTAINER_NAME := fact_app_test
 
 
 run:
-	docker-compose up --force-recreate -d
+	docker-compose up --force-recreate --build -d
 
 down:
 	docker-compose down
