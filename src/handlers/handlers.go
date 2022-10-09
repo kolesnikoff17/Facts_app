@@ -92,7 +92,7 @@ func postFact(w http.ResponseWriter, r *http.Request) *AppErr {
 		return &AppErr{status: http.StatusInternalServerError, err: err, msg: ""}
 	}
 	err = json.NewEncoder(w).Encode(struct {
-		Ids []int `json:"id"`
+		Ids []int `json:"ids"`
 	}{Ids: idList})
 	if err != nil {
 		return &AppErr{status: http.StatusInternalServerError, err: err, msg: ""}
@@ -114,10 +114,12 @@ func putFact(w http.ResponseWriter, r *http.Request) *AppErr {
 		return &AppErr{status: http.StatusBadRequest, err: err, msg: "ID mismatch"}
 	}
 	err = db.Ins.UpdFact(r.Context(), fact, id)
-	if err != nil {
+	if errors.Is(err, pgx.ErrNoRows) {
+		return &AppErr{status: http.StatusBadRequest, err: err, msg: "No such id"}
+	} else if err != nil {
 		return &AppErr{status: http.StatusInternalServerError, err: err, msg: ""}
 	}
-	w.WriteHeader(http.StatusOK)
+	io.WriteString(w, "{}")
 	return nil
 }
 
