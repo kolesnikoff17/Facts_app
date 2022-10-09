@@ -25,7 +25,7 @@ SQL_PID=$!
 wait $SQL_PID
 echo "Finished initializing database"
 echo "Running Go Tests"
-go test -v ./... -coverpkg ./... -coverprofile cover.out &
+go test -v ./... -coverprofile coverage/cover.out &
 GO_PID=$!
 wait $GO_PID
 echo "Finished with go tests"
