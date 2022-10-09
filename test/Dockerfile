@@ -19,9 +19,9 @@ RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
 RUN chown -R postgres /go
 
 WORKDIR testdir
-RUN chown -R postgres /testdir
 
 COPY . .
+RUN chown -R postgres /testdir
 
 RUN echo -e "\
 #!/bin/bash \n \

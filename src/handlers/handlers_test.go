@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"httpServer/src/common"
 	"httpServer/src/db"
 	"io/ioutil"
@@ -114,17 +115,18 @@ func TestRouterPost(t *testing.T) {
 		t.Errorf("router post method test: expected %d, got %d", http.StatusOK, res.StatusCode)
 	}
 	expected := struct {
-		Arr []int `json:"id"`
+		Ids []int `json:"ids"`
 	}{[]int{6, 7}}
 	got := struct {
-		Arr []int `json:"id"`
+		Ids []int `json:"ids"`
 	}{}
 	err = json.NewDecoder(res.Body).Decode(&got)
 	if err != nil {
 		t.Fatalf("router post method test: expected err nil, got %v", err)
 	}
+	fmt.Println(expected, got)
 	if !reflect.DeepEqual(expected, got) {
-		t.Errorf("router post method test: expected %d, got %d", expected, got)
+		t.Errorf("router post method test: expected %v, got %v", expected, got)
 	}
 }
 
