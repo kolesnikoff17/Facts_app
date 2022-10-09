@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Logging is a part of middleware. Logs to stdout Method, URI and execution time of each request
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -14,6 +15,8 @@ func Logging(next http.Handler) http.Handler {
 	})
 }
 
+// PanicRecovery is a part of middleware. If any panic occurs, it will recover it
+// and log stack trace, URL, Method and Body of request, caused panic
 func PanicRecovery(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
