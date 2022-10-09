@@ -18,6 +18,8 @@ test: $(COV_DIR)
 	docker image rm $(CONTAINER_NAME)
 
 test_ci:
+	mkdir -p $(COV_DIR)
+	touch $(COV_DIR)/$(COV_FILE)
 	docker build -f test/Dockerfile -t $(CONTAINER_NAME) .
 	docker run --rm $(CONTAINER_NAME)
 
