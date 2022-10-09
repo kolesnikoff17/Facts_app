@@ -17,6 +17,10 @@ test: $(COV_DIR)
 	docker run -v ${PWD}/$(COV_DIR):/testdir/$(COV_DIR) --rm $(CONTAINER_NAME)
 	docker image rm $(CONTAINER_NAME)
 
+test_ci:
+	docker build -f test/Dockerfile -t $(CONTAINER_NAME) .
+	docker run --rm $(CONTAINER_NAME)
+
 $(COV_DIR)/$(COV_FILE):
 	make test
 
