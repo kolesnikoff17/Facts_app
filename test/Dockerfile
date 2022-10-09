@@ -20,14 +20,11 @@ RUN chown -R postgres /go
 
 WORKDIR testdir
 RUN chown -R postgres /testdir
-RUN mkdir /tmpdir
-# used for local testing ONLY
- COPY . .
+
+COPY . .
 
 RUN echo -e "\
 #!/bin/bash \n \
-git clone \${GIT_URL} ../testdir/tmpdir/ \n \
-cp -R ../testdir/tmpdir/* ../testdir/ \n \
 /bin/sh ../testdir/test/test_init.sh & \n \
 COMMANDS_PID=\$! \n \
 (while kill -0 \$COMMANDS_PID; do sleep 1; done) && pg_ctl stop & \

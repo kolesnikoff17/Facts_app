@@ -1,8 +1,29 @@
+COV_DIR := coverage
+COV_FILE := cover.out
+CONTAINER_NAME := fact_app_test
 
 
+run:
+	docker-compose up --force-recreate -d
 
-test:
-	docker build -f test/Dockerfile -t fact_app_test .
-	docker run -v ${PWD}/cover.out:/testdir/cover.out -e GIT_URL='' fact_app_test
+down:
+	docker-compose down
+
+$(COV_DIR):
+	mkdir -p $(COV_DIR)
+
+test: $(COV_DIR)
+	docker build -f test/Dockerfile -t $(CONTAINER_NAME) .
+	docker run -v ${PWD}/$(COV_DIR):/testdir/$(COV_DIR) --rm $(CONTAINER_NAME)
+	docker image rm $(CONTAINER_NAME)
+
+$(COV_DIR)/$(COV_FILE):
+	make test
+
+report: $(COV_DIR)/$(COV_FILE)
+	go tool cover -html=$(COV_DIR)/$(COV_FILE)
+
+clean:
+	rm -rf $(COV_DIR)
 
 .PHONY: test
